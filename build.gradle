@@ -1,5 +1,7 @@
 plugins {
-    id 'java'
+    id "java"
+    id "io.swagger.core.v3.swagger-gradle-plugin" version "2.2.0"
+    id "org.openapi.generator" version "5.4.0"
 }
 
 group 'dev.breus'
@@ -9,12 +11,31 @@ repositories {
     mavenCentral()
 }
 
+resolve {
+    outputFormat = 'YAML'
+    openApiFile = file('src/main/specs/openapi.yaml')
+    classpath = sourceSets.main.runtimeClasspath
+    resourcePackages = ['dev.breus.webapp.resources']
+    outputDir = file('build/generated/openapi/')
+}
+
+openApiGenerate {
+    generatorName = "java"
+    library = "feign"
+    apiPackage = "dev.breus.api"
+    outputDir = "dev/breus/api/client"
+    templateDir = "src/main/resources/custom_template/libraries/feign"
+    inputSpec = "build/generated/openapi/openapi.yaml"
+}
+
 ext {
     tomcatVersion = "9.0.62"
     jerseyVersion = "2.35"
+    jacksonVersion = "2.13.2"
 }
 
 dependencies {
+    implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
     implementation "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}"
     implementation "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
     implementation "org.glassfish.jersey.core:jersey-server:${jerseyVersion}"
